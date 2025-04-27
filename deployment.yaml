@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-test-app
+spec:
+  replicas: 2  # Number of pods to run
+  selector:
+    matchLabels:
+      app: kubernetes-test-app
+  template:
+    metadata:
+      labels:
+        app: kubernetes-test-app
+    spec:
+      containers:
+      - name: kubernetes-test-app
+        image: kubernetes-test-app:latest  # Local image you built
+        imagePullPolicy: Never  # Don't pull, use local Docker image
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 5000  # This must match your app's exposed port
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-test-app
+spec:
+  selector:
+    app: kubernetes-test-app
+  ports:
+  - protocol: TCP
+    port: 8080        # Exposed service port (user hits this)
+    targetPort: 5000  # Your app inside the pod listens on 5000
+  type: NodePort       # <<--- I added this to expose your app outside!!
